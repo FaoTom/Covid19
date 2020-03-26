@@ -71,31 +71,8 @@ y0=[sstart,istart,rstart]
 t = np.linspace(0,tmax)
 # solve ODE
 y = odeint(model,y0,t)
-
 # plot results
 plt.plot(t,y)
 plt.xlabel('time')
 plt.ylabel('y(t)')
 plt.show()
-
-#==================================================
-
-def f(y,t):
-    Xi = y[0]
-    Yi = y[1]
-    Zi = y[2]
-    f0 = Xi*(onr/(Xi**3) + (H**2)*(Zi**2)/(2.0*rho_c) + (v0*np.exp(-l*Yi*k))/(rho_c))**(1.0/2.0)
-    f1 =  Zi
-    f2 =  -3*Zi*(H**2)*(onr/(Xi**3) + (H**2)*(Zi**2)/(2.0*rho_c) + (v0*np.exp(-l*Yi*k))/(rho_c))**0.5 + (l*k*v0*np.exp(-l*Yi*k))/(H**2)
-    return [f0,f1,f2]
-
-X0 = [1.0]
-Y0 = [1.0]
-Z0 = [c]
-y0 = [X0,Y0,Z0]
-t = np.linspace(start=1.0,stop=0.0,num=10001)
-
-soln = odeint(f,y0,t)
-X = soln[:,0]
-Y = soln[:,1]
-Z = soln[:,2]
