@@ -2,9 +2,9 @@
 
 # %% codecell
 import pandas as pd
-from datetime import datetime 
+from datetime import datetime
 import numpy as np
-
+from dateutil.parser import parse
 import matplotlib.pyplot as plt
 import matplotlib.lines as line
 
@@ -52,8 +52,10 @@ sstart = 1-totpos['13/03']
 rstart = 0
 istart = data.loc['13/03']
 # time points
-t = data.index
-t=date(t)
+t=data.index.to_series(range())
+t
+t_fit=t[18:]
+t_fit
 #fit base
 def modelI(t,trans,recov):
 # function that returns dy/dt
@@ -70,12 +72,11 @@ def modelI(t,trans,recov):
     y = odeint(model,y0,t)
     return y[:,1]
 # %% codecell
-p,cov=curve_fit(modelI,data.index,data['totale_attualmente_positivi'])
+p,cov=curve_fit(modelI,t_fit,totpos['13/03':])
 trans,recov=p
 fit=modelI(t,trans,recov)
-tot.plot(t,fit,'k--',label='Model')
+tot.plot(data.index,fit,'k--',label='Model')
 tot.legend()
 fig
 # %% codecell
 p
-# %% codecell
