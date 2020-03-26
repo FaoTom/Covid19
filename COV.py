@@ -2,7 +2,7 @@
 
 # %% codecell
 import pandas as pd
-
+from datetime import datetime 
 import numpy as np
 
 import matplotlib.pyplot as plt
@@ -21,58 +21,61 @@ from scipy.optimize import curve_fit
 
 %matplotlib inline
 # %% codecell
-xlsx=pd.ExcelFile('COV.xlsx')
-data=pd.read_excel(xlsx,'Foglio 1')
-data.columns=['Giorno','TOT','NEW','GRW','ACTOT','ACNEW','ACGRW']
-data.columns.name='Day'
-data.dropna(how='all',inplace=True)
-data.drop('Giorno',axis=1,inplace=True)
-data.index=range(12,26)
-data.drop(12,inplace=True)
-data
+data=pd.read_csv('dpc-covid19-ita-andamento-nazionale.csv')
+data['data'] = pd.to_datetime(data['data'])
+data['data'] = data['data'].dt.strftime('%d/%m')
+data.index=data['data']
+data['totale_attualmente_positivi']=data['totale_attualmente_positivi']/60483973
+data.drop('data',axis=1)
 # %% codecell
 fig=plt.figure(figsize=(18,16))
-fig.subplots_adjust(wspace=0.1,hspace=0)
-tot=fig.add_subplot(2,2,1)
-new=fig.add_subplot(2,2,2)
-grw=fig.add_subplot(2,2,3)
-tot.scatter(data.index,data['TOT'],label='TOT')
-tot.scatter(data.index,data['ACTOT'],label='ACTOT')
-new.plot(data.index,data['NEW'],'--',label='NEW')
-new.plot(data.index,data['ACNEW'],'--',label='ACNEW')
+new=fig.add_subplot(1,1,1)
+new.plot(data.index,data['nuovi_attualmente_positivi']+data['dimessi_guariti']+data['deceduti'],'--',label='NEW')
+new.plot(data.index,data['nuovi_attualmente_positivi'],'--',label='ACNEW')
 new.legend()
-grw.plot(data.index,data['GRW'],'--',label='GRW')
-grw.plot(data.index,data['ACGRW'],'--',label='ACGRW')
-l = line.Line2D([13,25], [1,1])
-grw.add_line(l)
-grw.legend()
+
+#grw=fig.add_subplot(2,2,3)
+#grw.plot(data.index,data['GRW'],'--',label='GRW')
+#grw.plot(data.index,data['ACGRW'],'--',label='ACGRW')
+#l = line.Line2D([13,25], [1,1])
+#grw.add_line(l)
+#grw.legend()
+
+fig
 # %% codecell
 trans = 2.3 #rateo di trasmissione
 recov = 0.6 #rateo di recovery
-tmax = data.index.size#numero di giorni fittizio
-
+tmax = 60#numero di giorni fittizio
+totpos=data['totale_attualmente_positivi']
 #initial conditions
-sstart = 60000000-data.loc[13,'TOT']
-rstart = 0.001
-istart = data.loc[13,'TOT']
-
-# function that returns dy/dt
-def model(y,t):
-    S=y[0]
-    I=y[1]
-    R=y[2]
-    dS = -trans*S*I
-    dI = trans*S*I-recov*I
-    dR = recov*I
-    return [dS,dI,dR]
-y0=[sstart,istart,rstart]
+sstart = 1-totpos['13/03']
+rstart = 0
+istart = data.loc['13/03']
 # time points
-t = np.linspace(13,13+tmax)
-# solve ODE
-y = odeint(model,y0,t)
-modelI=y[:,1]
-# plot results
-plt.plot(t,y)
-tot.scatter(t,modelI,label='Model')
+t = data.index
+t=date(t)
+#fit base
+def modelI(t,trans,recov):
+# function that returns dy/dt
+    def model(y,t):
+        S=y[0]
+        I=y[1]
+        R=y[2]
+        dS = -trans*S*I
+        dI = trans*S*I-recov*I
+        dR = recov*I
+        return [dS,dI,dR]
+    y0=[sstart,istart,rstart]
+    # solve ODE
+    y = odeint(model,y0,t)
+    return y[:,1]
+# %% codecell
+p,cov=curve_fit(modelI,data.index,data['totale_attualmente_positivi'])
+trans,recov=p
+fit=modelI(t,trans,recov)
+tot.plot(t,fit,'k--',label='Model')
 tot.legend()
 fig
+# %% codecell
+p
+# %% codecell
