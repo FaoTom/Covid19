@@ -17,6 +17,7 @@ from math import sqrt
 from scipy import stats
 from scipy.odr import *
 from scipy.integrate import odeint
+from scipy.optimize import curve_fit
 
 %matplotlib inline
 # %% codecell
@@ -37,7 +38,6 @@ new=fig.add_subplot(2,2,2)
 grw=fig.add_subplot(2,2,3)
 tot.scatter(data.index,data['TOT'],label='TOT')
 tot.scatter(data.index,data['ACTOT'],label='ACTOT')
-tot.legend()
 new.plot(data.index,data['NEW'],'--',label='NEW')
 new.plot(data.index,data['ACNEW'],'--',label='ACNEW')
 new.legend()
@@ -46,16 +46,15 @@ grw.plot(data.index,data['ACGRW'],'--',label='ACGRW')
 l = line.Line2D([13,25], [1,1])
 grw.add_line(l)
 grw.legend()
-# %% codecel
-
+# %% codecell
 trans = 2.3 #rateo di trasmissione
-recov = 0.23 #rateo di recovery
-tmax = 50 #numero di giorni fittizio
+recov = 0.6 #rateo di recovery
+tmax = data.index.size#numero di giorni fittizio
 
 #initial conditions
-sstart = 0.99
-rstart = 0
-istart = 0.01
+sstart = 60000000-data.loc[13,'TOT']
+rstart = 0.001
+istart = data.loc[13,'TOT']
 
 # function that returns dy/dt
 def model(y,t):
@@ -68,11 +67,12 @@ def model(y,t):
     return [dS,dI,dR]
 y0=[sstart,istart,rstart]
 # time points
-t = np.linspace(0,tmax)
+t = np.linspace(13,13+tmax)
 # solve ODE
 y = odeint(model,y0,t)
+modelI=y[:,1]
 # plot results
 plt.plot(t,y)
-plt.xlabel('time')
-plt.ylabel('y(t)')
-plt.show()
+tot.scatter(t,modelI,label='Model')
+tot.legend()
+fig
