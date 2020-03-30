@@ -1,3 +1,5 @@
 #!/bin/bash
 cp ../COVID-19/dati-andamento-nazionale/dpc-covid19-ita-andamento-nazionale.csv dpc-covid19-ita-andamento-nazionale.csv 
-
+git add *
+git commit -m "dati pcivile $(date +'%m/%d/%Y')"
+git push origin master
