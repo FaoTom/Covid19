@@ -3,6 +3,7 @@ cd ../COVID-19
 git pull origin master
 cd ../COV
 cp ../COVID-19/dati-andamento-nazionale/dpc-covid19-ita-andamento-nazionale.csv dpc-covid19-ita-andamento-nazionale.csv 
+sleep 20
 jupyter notebook COV.ipynb &
 sleep 20
 git add *
